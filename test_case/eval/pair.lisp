@@ -1,0 +1,17 @@
+((x a) (y b) (z c))
+
+(defun null. (x)
+  (eq x nil))
+(defun and. (x y)
+  (cond (x (cond (y #t) (#t nil)))
+        (#t nil)))
+(defun not. (x)
+  (cond (x nil)
+        (#t #t)))
+(defun pair. (x y)
+  (cond ((and. (null. x) (null. y)) ())
+        ((and. (not. (atom x)) (not. (atom y)))
+         (cons (list (car x) (car y))
+               (pair. (cdr x) (cdr y))))))
+
+(pair. ('(x y z)) ('(a b c)))
