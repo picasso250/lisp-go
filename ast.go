@@ -144,11 +144,11 @@ func evalList(head *Ast, tail *Ast, env *Env) (*Ast, error) {
 				return nil, err
 			}
 			if head.equalsStr("+") {
-				return add(v1, v2), nil
+				return add(tail), nil
 			} else if head.equalsStr("-") {
 				return sub(v1, v2), nil
 			} else if head.equalsStr("*") {
-				return mul(v1, v2), nil
+				return mul(tail), nil
 			}
 		}
 
@@ -231,12 +231,18 @@ func cons(t1 *Ast, t2 *Ast) *Ast {
 	return NewASTreeList(lst)
 }
 
-func add(v1 *Ast, v2 *Ast) *Ast {
-	i := v1.ival + v2.ival
+func add(v *Ast) *Ast {
+	i := 0
+	for _, vv := range v.lst {
+		i += vv.ival
+	}
 	return NewASTreeAtom(strconv.Itoa(i))
 }
-func mul(v1 *Ast, v2 *Ast) *Ast {
-	i := v1.ival * v2.ival
+func mul(v *Ast) *Ast {
+	i := 1
+	for _, vv := range v.lst {
+		i *= vv.ival
+	}
 	return NewASTreeAtom(strconv.Itoa(i))
 }
 func sub(v1 *Ast, v2 *Ast) *Ast {
