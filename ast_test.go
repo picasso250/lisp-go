@@ -43,8 +43,8 @@ func TestEval(t *testing.T) {
 		}
 	}
 }
-func testFile(t *testing.T, file_name string) {
-	file, err := os.Open(file_name)
+func testFile(t *testing.T, fname string) {
+	file, err := os.Open(fname)
 	if err != nil {
 		t.Error(err)
 	}
@@ -55,14 +55,14 @@ func testFile(t *testing.T, file_name string) {
 		t.Error(err)
 	}
 	want := strings.TrimSpace(line)
-	ast_list, err := parse(rd)
+	astList, err := parse(rd)
 	if err != nil {
 		t.Error(err)
 	}
 	env := &Env{}
 	var v *Ast
-	for _, e := range ast_list {
-		// fmt.Printf("eval %s\n", e.SimpleString())
+	for _, e := range astList {
+		fmt.Printf("eval %s\n", e.SimpleString())
 		v, err = eval(&e, env)
 		if err != nil {
 			t.Error(err)
@@ -82,7 +82,7 @@ func TestCaseFile(t *testing.T) {
 		}
 		return nil
 	})
-  if err != nil {
-    t.Errorf("error: %s", err.Error())
-  }
+	if err != nil {
+		t.Errorf("error: %s", err.Error())
+	}
 }

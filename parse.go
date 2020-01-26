@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"os"
+	"unicode"
 	// "fmt"
 )
 
@@ -15,11 +16,11 @@ func parse(inStream *bufio.Reader) ([]Ast, error) {
 	ret := make([]Ast, 0)
 	var cur *Ast
 	state := 0
-	sb := make([]byte, 0)
+	sb := make([]rune, 0)
 	in := inStream
 
 	for {
-		c, err := in.ReadByte()
+		c, _, err := in.ReadRune()
 		if err == io.EOF {
 			if len(sb) > 0 {
 				// if only an atom
@@ -32,7 +33,7 @@ func parse(inStream *bufio.Reader) ([]Ast, error) {
 		}
 		switch state {
 		case 0: // initial state
-			if IsSpace(c) {
+			if unicode.IsSpace(c) {
 				continue
 			}
 			if c == '(' {
@@ -57,7 +58,7 @@ func parse(inStream *bufio.Reader) ([]Ast, error) {
 			}
 			break
 		case 1: // in an atom
-			if IsSpace(c) || c == '(' || c == ')' {
+			if unicode.IsSpace(c) || c == '(' || c == ')' {
 				e := NewASTreeAtom(string(sb))
 				if cur == nil {
 					// in root
@@ -65,7 +66,7 @@ func parse(inStream *bufio.Reader) ([]Ast, error) {
 				} else {
 					cur.add(e)
 				}
-				sb = make([]byte, 0)
+				sb = make([]rune, 0)
 				state = 0
 				if c == '(' || c == ')' {
 					err = in.UnreadByte()
@@ -79,7 +80,4 @@ func parse(inStream *bufio.Reader) ([]Ast, error) {
 			break
 		}
 	}
-}
-func IsSpace(b byte) bool {
-	return b == '\r' || b == '\n' || b == '\t' || b == '\v' || b == ' '
 }

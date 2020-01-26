@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"fmt"
+
 	// "fmt"
 	"strconv"
 	"strings"
@@ -144,11 +146,11 @@ func evalList(head *Ast, tail *Ast, env *Env) (*Ast, error) {
 				return nil, err
 			}
 			if head.equalsStr("+") {
-				return add(tail), nil
+				return add(tail, env)
 			} else if head.equalsStr("-") {
 				return sub(v1, v2), nil
 			} else if head.equalsStr("*") {
-				return mul(tail), nil
+				return mul(tail, env)
 			}
 		}
 
@@ -178,15 +180,18 @@ func evalList(head *Ast, tail *Ast, env *Env) (*Ast, error) {
 func apply(fun *Ast, lst []*Ast, env *Env) (*Ast, error) {
 	c := fun.closure
 	e := &Env{}
+	fmt.Printf("apply ")
 	for i, name := range c.params {
 		v, err := eval(lst[i], env)
+		fmt.Printf("%s ", v.String())
 		if err != nil {
 			return nil, err
 		}
 		e.add(name, v)
 	}
-	new_env := extend(c.env, e)
-	return eval(c.body, new_env)
+	fmt.Printf("\n")
+	newEnv := extend(c.env, e)
+	return eval(c.body, newEnv)
 }
 func doDef(tree *Ast, env *Env) error {
 	name := tree.get(0)
@@ -213,11 +218,12 @@ func cond(tree *Ast, env *Env) (*Ast, error) {
 	for tree.len() > 0 {
 		entry := tree.getHead()
 		cond := entry.get(0)
-		cond_res, err := eval(cond, env)
+		fmt.Printf("cond %s\n", cond.String())
+		condRes, err := eval(cond, env)
 		if err != nil {
 			return nil, err
 		}
-		if cond_res.isTrue() {
+		if condRes.isTrue() {
 			return eval(entry.get(1), env)
 		}
 		tree = tree.getTail()
@@ -231,19 +237,27 @@ func cons(t1 *Ast, t2 *Ast) *Ast {
 	return NewASTreeList(lst)
 }
 
-func add(v *Ast) *Ast {
-	i := 0
+func add(v *Ast, env *Env) (*Ast, error) {
+	s := 0
 	for _, vv := range v.lst {
-		i += vv.ival
+		vvv, err := eval(vv, env)
+		if err != nil {
+			return NewASTreeAtom(strconv.Itoa(s)), err
+		}
+		s += vvv.ival
 	}
-	return NewASTreeAtom(strconv.Itoa(i))
+	return NewASTreeAtom(strconv.Itoa(s)), nil
 }
-func mul(v *Ast) *Ast {
-	i := 1
+func mul(v *Ast, env *Env) (*Ast, error) {
+	s := 1
 	for _, vv := range v.lst {
-		i *= vv.ival
+		vvv, err := eval(vv, env)
+		if err != nil {
+			return NewASTreeAtom(strconv.Itoa(s)), err
+		}
+		s *= vvv.ival
 	}
-	return NewASTreeAtom(strconv.Itoa(i))
+	return NewASTreeAtom(strconv.Itoa(s)), nil
 }
 func sub(v1 *Ast, v2 *Ast) *Ast {
 	i := v1.ival - v2.ival
